@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>HTML5 basic skeleton</title>
+  <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+  <script type="text/javascript" src="spectrogram.js"></script>
+  <style>
+    .spectrogram {
+      width: 100%;
+      height: 100%;
+    }
+
+    .spectrogram canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+  <script>
+    $( document ).ready(function() { 
+      new Spectrogram('#vis', 'iono').load('data.json');
+    });
+  </script>
+</head>
+<body>
+  <div id="vis" class="spectrogram"></div>
+</body>
+</html>
+  
