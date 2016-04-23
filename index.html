@@ -68,7 +68,8 @@
           stroke: Cesium.Color.HOTPINK,
           fill: Cesium.Color.PINK,
           strokeWidth: 3,
-          markerSymbol: '?'
+          markerSymbol: '.',
+          markerSize: 10
         });
         promise.then(function(dataSource) {
         viewer.dataSources.add(dataSource);
@@ -88,7 +89,6 @@
           if (dataPoint) {
             addToMessage('orbit', dataPoint.properties.orbit);
             addToMessage('line', dataPoint.properties.line);
-            addToMessage('frame', dataPoint.properties.frame);
             alert(alertText);
           }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
