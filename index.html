@@ -107,10 +107,15 @@
         x = Math.floor((x / spectrogramContainer.offsetWidth) * spectrogram.jsonData.frames.length);
         y = Math.floor((y / spectrogramContainer.offsetHeight) * 512);
 
-        // TODO: show that point back on the globe
+        alert('Clicked point in '+spectrogramContainer.id+': ' + x + ', ' + y + ' -> ' + spectrogram.jsonData.frames[x].frame);
+
+        // TODO: Show that point back on the globe
+        selectedLine[x].point = new Cesium.PointGraphics({
+          color: Cesium.Color.ORANGE,
+          pixelSize: 10
+        });
+
         // TODO: save point to a list to show what's been clicked
-        alert('Clicked point in '+spectrogramContainer.id+': ' + x + ', ' + y +
-           ' -> ' + spectrogram.jsonData.frames[x].frame);
 
       }, false);
     }
