@@ -27,17 +27,16 @@ Spectrogram.prototype.initChart = function(data) {
   this.canvas.attr({width: data.frames.length, height: 512});
   var c = this.canvas.get(0).getContext("2d");
   
-  frameData = [];
-  for (var i = 0; i < data.frames.length; i++)
-    frameData[data.frames[i].frame] = data.frames[i];
-  frameKeys = Object.keys(frameData).sort(function(a, b) { return a - b; });
-  
-  var max = 0;
-  for (var k = 0; k < frameKeys.length; k++)
-    max = Math.max(max, Math.max.apply(null, frameData[frameKeys[k]][this.dataset]));
+  // Sort the data by frame ID
+  var frameData = data.frames.slice();
+  frameData.sort(function(a, b) { return a.frame - b.frame; });
 
-  for (var i = 0; i < frameKeys.length; i++) {
-    var d = frameData[frameKeys[i]][this.dataset];
+  var max = 0;
+  for (var k = 0; k < data.frames.length; k++)
+    max = Math.max(max, Math.max.apply(null, data.frames[k][this.dataset]));
+
+  for (var i = 0; i < frameData.length; i++) {
+    var d = frameData[i][this.dataset];
     for (var j = 0; j < 512; j++) {
       c.fillStyle = "hsl(0, 0%, " + d[j] * 100 / max + "%)";
       c.fillRect(i, j, 1, 1);
