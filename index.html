@@ -107,7 +107,8 @@
 
         // TODO: show that point back on the globe
         // TODO: save point to a list to show what's been clicked
-        alert('Clicked point in '+spectrogramContainer.id+': ' + x + ', ' + y);
+        alert('Clicked point in '+spectrogramContainer.id+': ' + x + ', ' + y +
+           ' -> ' + spectrogram.jsonData.frames[x].frame);
 
       }, false);
     }
