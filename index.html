@@ -7,7 +7,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
-  <title>Hello World!</title>
+  <title>Marsis Explorer</title>
   <script src="cesium/Cesium.js"></script>
   <script src="jquery/2.2.2/jquery.min.js"></script>
   <script src="spectrogram/spectrogram.js"></script>
@@ -17,12 +17,12 @@
         width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
       }
       #cesiumContainer {
-        height: 500px;
+        /*height: 500px;*/
         margin-bottom: 0.75em;
       }
       #radarContainer, #simulationContainer, #differenceContainer {
         width: 100%;
-        height: 20px;
+        height: 33%;
         margin-bottom: 0.75em;
         background-color: rgba(0,0,0,0.1);
       }
@@ -33,16 +33,40 @@
   </style>
 </head>
 <body>
-  <h1>Marsis explorer</h1>
+
+  <div id="infoContainer">
+    <h1>Marsis explorer</h1>
+  </div>
   <div id="cesiumContainer"></div>
-
-  <div id="radarContainer"></div>
-
-  <div id="simulationContainer"></div>
-
-  <div id="differenceContainer"></div>
+  <div id="spectrogramContainers">
+    <div id="radarContainer"></div>
+    <div id="simulationContainer"></div>
+    <div id="differenceContainer"></div>
+  </div>
 
   <script>
+    // Resize the elements to fit the screen
+    var resizeContainers = function() {
+      var globeScale = 2/5;
+      var slop = 120;
+      $('#cesiumContainer').height( ($(window).height() - slop) * globeScale );
+      $('#spectrogramContainers').height( ($(window).height() - slop) * (1-globeScale) );
+    }
+
+    // If the window is resized by the user, reset the size
+    $(function() {
+      $(window).resize(function() {
+          if ($('#cesiumContainer').length > 0) {
+            resizeContainers();
+          }
+      });
+      $(window).resize();
+    });
+
+    $( document ).ready(function() { 
+      $(window).resize();
+    });
+
     // Setup the spectrogram
     var radarSpectrogram = new Spectrogram('#radarContainer', 'iono');
     var simulationSpectrogram = new Spectrogram('#simulationContainer', 'iono');
