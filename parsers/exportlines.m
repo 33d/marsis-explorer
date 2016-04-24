@@ -51,20 +51,34 @@ endif
            ECHO_MODULUS_ZERO_F2_SIM, ...
            ECHO_MODULUS_PLUS1_F2_SIM ] = readmarsiscdr(fn);
 
+% Sort the data into orbits and lines
+data = struct();
 for i = 1:size(FRAME_ID, 2)
-  for lineIndex = 1:size(OST_LINE_NUMBER)
-    outfilename = fullfile(outdir, sprintf("%08d,%08d", ...
-        ORBIT_NUMBER(lineIndex), OST_LINE_NUMBER(lineIndex)));
+  d = struct();
+  d.lat = SUB_SC_LATITUDE(i);
+  d.lon = SUB_SC_LONGITUDE(i);
+  d.alt = SPACECRAFT_ALTITUDE(i);
+  d.iono = ECHO_MODULUS_ZERO_F1_IONO(:,i);
+  d.sim = ECHO_MODULUS_ZERO_F1_SIM(:,i);
+  data.(int2str(ORBIT_NUMBER(i))).(int2str(OST_LINE_NUMBER(i))).(int2str(FRAME_ID(i))) = d;
+endfor
+
+for [lines, orbitID] = data
+  for [line, lineID] = lines
+    % The IDs are strings; if you put %d in printf, the printf runs multiple times
+    outfilename = fullfile(outdir, sprintf("%s,%s", orbitID, lineID));
     f = fopen(outfilename, 'w');
-    fprintf(f, '{ "latitude": %g, "longitude": %g, "alt": %g, "orbit": %d, "line": %d, "frames": [', ...
-        SUB_SC_LATITUDE(i), SUB_SC_LONGITUDE(i), SPACECRAFT_ALTITUDE(i),...
-        ORBIT_NUMBER(i), OST_LINE_NUMBER(i));
-    for frameIndex = size(FRAME_ID)
-      if (frameIndex > 1)
-        fputs(f, ", ");
+    fprintf(f, '{ "orbit": %s, "line": %s, "frames": [', orbitID, lineID);
+    i = 0;
+    for [frame, frameID] = line
+      if (i > 0)
+        fprintf(f, ',');
+      else
+        i = 1;
       endif
-      fprintf(f, '{"frame": %d, "iono": [', FRAME_ID(frameIndex))
-      iono = ECHO_MODULUS_ZERO_F1_IONO(:,frameIndex);
+      fprintf(f, '{"frame": %s, "lat": %f, "lon": %f, "alt": %f, "iono": [', ...
+          frameID, frame.lat, frame.lon, frame.alt);
+      iono = frame.iono;
       for j = 1:size(iono)
         if (j == 1)
           fprintf(f, "%g", iono(j));
@@ -73,7 +87,7 @@ for i = 1:size(FRAME_ID, 2)
         endif
       endfor
       fprintf(f, '],\n"sim":[');
-      sim = ECHO_MODULUS_MINUS1_F1_SIM(:,frameIndex);
+      sim = frame.sim;
       for j = 1:size(sim)
         if (j == 1)
           fprintf(f, "%g", sim(j));
@@ -83,7 +97,7 @@ for i = 1:size(FRAME_ID, 2)
       endfor
       fprintf(f, ']} ');
     endfor
-    fprintf(f, "]\n}");
+    fprintf(f, "]}");
     fclose(f);
   endfor
 endfor
