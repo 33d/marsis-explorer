@@ -10,6 +10,7 @@
   <title>Hello World!</title>
   <script src="cesium/Cesium.js"></script>
   <script src="jquery/2.2.2/jquery.min.js"></script>
+  <script src="spectrogram/spectrogram.js"></script>
   <style>
       @import url(cesium/Widgets/widgets.css);
       html, body, {
@@ -25,26 +26,28 @@
         margin-bottom: 0.75em;
         background-color: rgba(0,0,0,0.1);
       }
+      #radarContainer canvas, #simulationContainer canvas, #differenceContainer canvas {
+        width:100%;
+        max-height: 100%;
+      }
   </style>
 </head>
 <body>
   <h1>Marsis explorer</h1>
   <div id="cesiumContainer"></div>
 
-  <div id="radarContainer">
-    
-  </div>
+  <div id="radarContainer"></div>
 
-  <div id="simulationContainer">
-    
-  </div>
+  <div id="simulationContainer"></div>
 
-  <div id="differenceContainer">
-    
-  </div>
+  <div id="differenceContainer"></div>
 
   <script>
-    // var viewer = new Cesium.Viewer('cesiumContainer');
+    // Setup the spectrogram
+    var radarSpectrogram = new Spectrogram('#radarContainer', 'iono');
+    var simulationSpectrogram = new Spectrogram('#simulationContainer', 'iono');
+    var differenceSpectrogram = new Spectrogram('#differenceContainer', 'iono');
+    // Setup the globe
     var viewer = new Cesium.Viewer('cesiumContainer', {
       imageryProvider : new Cesium.MapboxImageryProvider({
         url: 'https://api.mapbox.com/v4/',
@@ -73,6 +76,7 @@
         });
         promise.then(function(dataSource) {
         viewer.dataSources.add(dataSource);
+        // Set a click handler to load the spectrogram from the point selected
         var scene = viewer.scene;
         var handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
         handler.setInputAction(function(click) {
@@ -83,13 +87,18 @@
           var pickedObject = scene.pick(click.position);
           var dataPoint;
           if (pickedObject) {
-            // Ugly hack...
+            // Ugly hack to get the pickedObject.id
             dataPoint = dataSource.entities.getById(pickedObject.id.valueOf()._id);
           }
           if (dataPoint) {
-            addToMessage('orbit', dataPoint.properties.orbit);
-            addToMessage('line', dataPoint.properties.line);
-            alert(alertText);
+            // Load the spectrogram from the point
+            // TODO: select the correct data.json to load from the point.
+            radarSpectrogram.load('spectrogram/data.json');
+            simulationSpectrogram.load('spectrogram/data.json');
+            differenceSpectrogram.load('spectrogram/data.json');
+            // addToMessage('orbit', dataPoint.properties.orbit);
+            // addToMessage('line', dataPoint.properties.line);
+            // alert(alertText);
           }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
       });
