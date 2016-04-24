@@ -22,7 +22,8 @@
       }
       #radarContainer, #simulationContainer, #differenceContainer {
         width: 100%;
-        height: 33%;
+        /*height: 33%;*/
+        height: 50%;
         margin-bottom: 0.75em;
         background-color: rgba(0,0,0,0.1);
       }
@@ -45,15 +46,17 @@
   <div id="spectrogramContainers">
     <div id="radarContainer"></div>
     <div id="simulationContainer"></div>
-    <div id="differenceContainer"></div>
+    <!-- <div id="differenceContainer"></div> -->
   </div>
 
   <script>
     var selectedEntity;
     // Resize the elements to fit the screen
     var resizeContainers = function() {
-      var globeScale = 2/5;
-      var slop = 120;
+      // var globeScale = 2/5;
+      // var slop = 120;
+      var globeScale = 3/5;
+      var slop = 115;
       $('#cesiumContainer').height( ($(window).height() - slop) * globeScale );
       $('#spectrogramContainers').height( ($(window).height() - slop) * (1-globeScale) );
     }
