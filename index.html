@@ -136,6 +136,17 @@
           markerSize: 10
         });
         promise.then(function(dataSource) {
+
+        // Replace the markers with circles
+        var entities = dataSource.entities.values;
+        for (var i = 0; i < entities.length; i++) {
+            var entity = entities[i];
+            entity.billboard = undefined;
+            entity.point = new Cesium.PointGraphics({
+                pixelSize: 10
+            });
+        }
+
         viewer.dataSources.add(dataSource);
         // Set a click handler to the globe to load the spectrogram from the point selected
         var scene = viewer.scene;
