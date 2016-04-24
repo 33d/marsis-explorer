@@ -50,7 +50,9 @@
   </div>
 
   <script>
-    var selectedEntity;
+    // Store the line that the selected point belongs to
+    var selectedLine = [];
+
     // Resize the elements to fit the screen
     var resizeContainers = function() {
       // var globeScale = 2/5;
@@ -87,11 +89,11 @@
     {
       jsonData: null,
       spectrogram: new Spectrogram('#simulationContainer', 'sim')
-    },
-    {
-      jsonData: null,
-      spectrogram: new Spectrogram('#differenceContainer', 'iono')
-    }
+    }//,
+    // {
+    //   jsonData: null,
+    //   spectrogram: new Spectrogram('#differenceContainer', 'iono')
+    // }
     ];
 
     // Setup the spectrogram
@@ -167,12 +169,15 @@
               alertText += key + ': ' + value + '\n';
           }
           var pickedObject = scene.pick(click.position);
-          if (selectedEntity) {
-            // Change dataPoint back to white
-            selectedEntity.point = new Cesium.PointGraphics({
-              color: Cesium.Color.WHITE,
-              pixelSize: 10
-            });
+          if (selectedLine) {
+            // Change dataPoint line back to white
+            for (var i = 0; i < selectedLine.length; i++) {
+              selectedLine[i].point = new Cesium.PointGraphics({
+                color: Cesium.Color.WHITE,
+                pixelSize: 10
+              });
+            }
+            selectedLine = [];
           }
           var dataPoint;
           if (pickedObject) {
@@ -180,12 +185,21 @@
             dataPoint = dataSource.entities.getById(pickedObject.id.valueOf()._id);
           }
           if (dataPoint) {
-            selectedEntity = dataPoint;
-            // Highlight the point clicked
-            dataPoint.point = new Cesium.PointGraphics({
-              color: Cesium.Color.RED,
-              pixelSize: 10
-            });
+            // Find the line that the dataPoint belongs to and add it to our selectedLine
+            for (var i = 0; i < dataSource.entities.values.length; i++) {
+              if (dataSource.entities.values[i].properties.line == dataPoint.properties.line) {
+                selectedLine.push(dataSource.entities.values[i]);
+              }
+            }
+            
+            // Highlight the line clicked
+            for (var i = 0; i < selectedLine.length; i++) {
+              selectedLine[i].point = new Cesium.PointGraphics({
+                color: Cesium.Color.RED,
+                pixelSize: 10
+              });
+            }
+
             // Load the spectrogram from the point
             var loadSpectrogramData = function(spectrogram) {
               $.ajax({
