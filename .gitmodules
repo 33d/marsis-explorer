@@ -1,0 +1,3 @@
+[submodule "marsis-explorer-linedata"]
+	path = linedata
+	url = https://github.com/33d/marsis-explorer-linedata.git
