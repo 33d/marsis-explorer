@@ -76,6 +76,18 @@
     var radarSpectrogram = new Spectrogram('#radarContainer', 'iono');
     var simulationSpectrogram = new Spectrogram('#simulationContainer', 'iono');
     var differenceSpectrogram = new Spectrogram('#differenceContainer', 'iono');
+
+    // Set click handlers for the spectrograms
+    document.getElementById('radarContainer').addEventListener('click', function(event) {
+      var x = event.offsetX,
+          y = event.offsetY;
+
+      // TODO: Convert point to scale of the json data
+
+      alert('Clicked point: ' + x + ', ' + y);
+
+    }, false);
+
     // Setup the globe
     var viewer = new Cesium.Viewer('cesiumContainer', {
       imageryProvider : new Cesium.MapboxImageryProvider({
