@@ -74,19 +74,8 @@
 
     // Setup the spectrogram
     var radarSpectrogram = new Spectrogram('#radarContainer', 'iono');
-    var simulationSpectrogram = new Spectrogram('#simulationContainer', 'iono');
+    var simulationSpectrogram = new Spectrogram('#simulationContainer', 'sim');
     var differenceSpectrogram = new Spectrogram('#differenceContainer', 'iono');
-
-    // Set click handlers for the spectrograms
-    document.getElementById('radarContainer').addEventListener('click', function(event) {
-      var x = event.offsetX,
-          y = event.offsetY;
-
-      // TODO: Convert point to scale of the json data
-
-      alert('Clicked point: ' + x + ', ' + y);
-
-    }, false);
 
     // Setup the globe
     var viewer = new Cesium.Viewer('cesiumContainer', {
@@ -102,13 +91,16 @@
     });
     // Load the geojson datasource
     var promise;
-    var jsonResult;
+    var globeJson;
+    var radarSpectrogramJson;
+    var simulationSpectrogramJson;
+    var differenceSpectrogramJson;
     $.ajax({
       url: "all.geojson",
       dataType: "text",
       success: function( result ) {
-        jsonResult = JSON.parse(result);
-        var promise = Cesium.GeoJsonDataSource.load(jsonResult, {
+        globeJson = JSON.parse(result);
+        var promise = Cesium.GeoJsonDataSource.load(globeJson, {
           stroke: Cesium.Color.HOTPINK,
           fill: Cesium.Color.PINK,
           strokeWidth: 3,
@@ -133,13 +125,36 @@
           }
           if (dataPoint) {
             // Load the spectrogram from the point
+            var loadSpectrogramData = function(container, json, spectrogram) {
+              $.ajax({
+                url: "spectrogram/data.json",
+                dataType: "text",
+                success: function(result) {
+                  json = JSON.parse(result);
+                  spectrogram.load(json);
+                  // Set click handlers for the spectrograms
+                  var spectrogramContainer = document.getElementById(container);
+                  spectrogramContainer.addEventListener('click', function(event) {
+                    var x = event.offsetX,
+                        y = event.offsetY;
+
+                    // Convert point to scale of the json data
+                    x = Math.floor((x / spectrogramContainer.offsetWidth) * json.frames.length);
+                    y = Math.floor((y / spectrogramContainer.offsetHeight) * 512);
+
+                    // TODO: show that point back on the globe
+                    // TODO: save point to a list to show what's been clicked
+                    alert('Clicked point in '+spectrogramContainer.id+': ' + x + ', ' + y);
+
+                  }, false);
+                }
+              });
+            };
+
             // TODO: select the correct data.json to load from the point.
-            radarSpectrogram.load('spectrogram/data.json');
-            simulationSpectrogram.load('spectrogram/data.json');
-            differenceSpectrogram.load('spectrogram/data.json');
-            // addToMessage('orbit', dataPoint.properties.orbit);
-            // addToMessage('line', dataPoint.properties.line);
-            // alert(alertText);
+            loadSpectrogramData('radarContainer', radarSpectrogramJson, radarSpectrogram);
+            loadSpectrogramData('simulationContainer', simulationSpectrogramJson, simulationSpectrogram);
+            loadSpectrogramData('differenceContainer', differenceSpectrogramJson, differenceSpectrogram);
           }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
       });

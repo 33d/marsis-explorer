@@ -7,20 +7,26 @@ Spectrogram = function(element, dataset) {
 
 Spectrogram.prototype.load = function(url) {
   var spectrogram = this;
-  $.ajax({
-    url: url,
-    dataType: 'json',
-    beforeSend: function(xhr) { /* For Firefox with local files */
-      if (xhr.overrideMimeType)
-        xhr.overrideMimeType("application/json");
-    },
-    error: function(xhr, status, e) {
-      alert("Can't load " + url);
-    },
-    success: function(data, status, xhr) {
-      spectrogram.initChart(data);
-    }
-  });
+  if (!(typeof(url) === "string")) {
+    // It's JSON
+    this.initChart(url);
+  } else {
+    // It's a text URL
+    $.ajax({
+      url: url,
+      dataType: 'json',
+      beforeSend: function(xhr) { /* For Firefox with local files */
+        if (xhr.overrideMimeType)
+          xhr.overrideMimeType("application/json");
+      },
+      error: function(xhr, status, e) {
+        alert("Can't load " + url);
+      },
+      success: function(data, status, xhr) {
+        spectrogram.initChart(data);
+      }
+    });
+  }
 };
 
 Spectrogram.prototype.initChart = function(data) {
