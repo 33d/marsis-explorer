@@ -30,6 +30,10 @@
         width:100%;
         max-height: 100%;
       }
+      /* Hide Cesium toolbar */
+      .cesium-viewer-bottom, .cesium-viewer-animationContainer {
+        display: none;
+      }
   </style>
 </head>
 <body>
@@ -63,6 +67,7 @@
       $(window).resize();
     });
 
+    // Once the page is loaded, resize to fit
     $( document ).ready(function() { 
       $(window).resize();
     });
