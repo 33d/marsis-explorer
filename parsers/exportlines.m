@@ -70,13 +70,15 @@ for [lines, orbitID] = data
     f = fopen(outfilename, 'w');
     fprintf(f, '{ "orbit": %s, "line": %s, "frames": [', orbitID, lineID);
     i = 0;
-    for [frame, frameID] = line
+    % Sort the field IDs, so they're easier to index on the client side
+    for frameID = sort(cellfun(@str2num, fieldnames(line)))' % frameID = number
+      frame = line.(num2str(frameID));
       if (i > 0)
         fprintf(f, ',');
       else
         i = 1;
       endif
-      fprintf(f, '{"frame": %s, "lat": %f, "lon": %f, "alt": %f, "iono": [', ...
+      fprintf(f, '{"frame": %d, "lat": %f, "lon": %f, "alt": %f, "iono": [', ...
           frameID, frame.lat, frame.lon, frame.alt);
       iono = frame.iono;
       for j = 1:size(iono)
