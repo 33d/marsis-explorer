@@ -121,6 +121,7 @@
       timeline: false,
       selectionIndicator: false
     });
+
     // Load the geojson datasource
     var promise;
     var globeJson;
@@ -137,6 +138,9 @@
           markerSize: 10
         });
         promise.then(function(dataSource) {
+
+        // Fly to our location
+        viewer.flyTo(dataSource);
 
         // Replace the markers with circles
         var entities = dataSource.entities.values;
