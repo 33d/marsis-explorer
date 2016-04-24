@@ -49,6 +49,7 @@
   </div>
 
   <script>
+    var selectedEntity;
     // Resize the elements to fit the screen
     var resizeContainers = function() {
       var globeScale = 2/5;
@@ -158,12 +159,25 @@
               alertText += key + ': ' + value + '\n';
           }
           var pickedObject = scene.pick(click.position);
+          if (selectedEntity) {
+            // Change dataPoint back to white
+            selectedEntity.point = new Cesium.PointGraphics({
+              color: Cesium.Color.WHITE,
+              pixelSize: 10
+            });
+          }
           var dataPoint;
           if (pickedObject) {
             // Ugly hack to get the pickedObject.id
             dataPoint = dataSource.entities.getById(pickedObject.id.valueOf()._id);
           }
           if (dataPoint) {
+            selectedEntity = dataPoint;
+            // Highlight the point clicked
+            dataPoint.point = new Cesium.PointGraphics({
+              color: Cesium.Color.RED,
+              pixelSize: 10
+            });
             // Load the spectrogram from the point
             var loadSpectrogramData = function(spectrogram) {
               $.ajax({
