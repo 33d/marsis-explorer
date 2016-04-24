@@ -70,12 +70,43 @@
     // Once the page is loaded, resize to fit
     $( document ).ready(function() { 
       $(window).resize();
+      // Setup Spectrograms
+      for (var i = 0; i < spectrograms.length; i++) {
+        addClickHandlerToSpectrogram(spectrograms[i]);
+      }
     });
 
+    var spectrograms = [{
+      jsonData: null,
+      spectrogram: new Spectrogram('#radarContainer', 'iono')
+    },
+    {
+      jsonData: null,
+      spectrogram: new Spectrogram('#simulationContainer', 'sim')
+    },
+    {
+      jsonData: null,
+      spectrogram: new Spectrogram('#differenceContainer', 'iono')
+    }
+    ];
+
     // Setup the spectrogram
-    var radarSpectrogram = new Spectrogram('#radarContainer', 'iono');
-    var simulationSpectrogram = new Spectrogram('#simulationContainer', 'sim');
-    var differenceSpectrogram = new Spectrogram('#differenceContainer', 'iono');
+    var addClickHandlerToSpectrogram = function(spectrogram) {
+      var spectrogramContainer = spectrogram.spectrogram.element.get(0);
+      spectrogramContainer.addEventListener('click', function(event) {
+        var x = event.offsetX,
+            y = event.offsetY;
+
+        // Convert point to scale of the json data
+        x = Math.floor((x / spectrogramContainer.offsetWidth) * spectrogram.jsonData.frames.length);
+        y = Math.floor((y / spectrogramContainer.offsetHeight) * 512);
+
+        // TODO: show that point back on the globe
+        // TODO: save point to a list to show what's been clicked
+        alert('Clicked point in '+spectrogramContainer.id+': ' + x + ', ' + y);
+
+      }, false);
+    }
 
     // Setup the globe
     var viewer = new Cesium.Viewer('cesiumContainer', {
@@ -92,9 +123,6 @@
     // Load the geojson datasource
     var promise;
     var globeJson;
-    var radarSpectrogramJson;
-    var simulationSpectrogramJson;
-    var differenceSpectrogramJson;
     $.ajax({
       url: "all.geojson",
       dataType: "text",
@@ -109,10 +137,11 @@
         });
         promise.then(function(dataSource) {
         viewer.dataSources.add(dataSource);
-        // Set a click handler to load the spectrogram from the point selected
+        // Set a click handler to the globe to load the spectrogram from the point selected
         var scene = viewer.scene;
         var handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
         handler.setInputAction(function(click) {
+
           var alertText = '';
           function addToMessage(key, value) {
               alertText += key + ': ' + value + '\n';
@@ -125,36 +154,22 @@
           }
           if (dataPoint) {
             // Load the spectrogram from the point
-            var loadSpectrogramData = function(container, json, spectrogram) {
+            var loadSpectrogramData = function(spectrogram) {
               $.ajax({
-                url: "spectrogram/data.json",
+                // url: "spectrogram/data.json", // Demo data
+                url: "linedata/"+dataPoint.properties.orbit+","+dataPoint.properties.line,
                 dataType: "text",
                 success: function(result) {
-                  json = JSON.parse(result);
-                  spectrogram.load(json);
-                  // Set click handlers for the spectrograms
-                  var spectrogramContainer = document.getElementById(container);
-                  spectrogramContainer.addEventListener('click', function(event) {
-                    var x = event.offsetX,
-                        y = event.offsetY;
-
-                    // Convert point to scale of the json data
-                    x = Math.floor((x / spectrogramContainer.offsetWidth) * json.frames.length);
-                    y = Math.floor((y / spectrogramContainer.offsetHeight) * 512);
-
-                    // TODO: show that point back on the globe
-                    // TODO: save point to a list to show what's been clicked
-                    alert('Clicked point in '+spectrogramContainer.id+': ' + x + ', ' + y);
-
-                  }, false);
+                  spectrogram.jsonData = JSON.parse(result);
+                  spectrogram.spectrogram.load(spectrogram.jsonData);
                 }
               });
             };
 
             // TODO: select the correct data.json to load from the point.
-            loadSpectrogramData('radarContainer', radarSpectrogramJson, radarSpectrogram);
-            loadSpectrogramData('simulationContainer', simulationSpectrogramJson, simulationSpectrogram);
-            loadSpectrogramData('differenceContainer', differenceSpectrogramJson, differenceSpectrogram);
+            for (var i = 0; i < spectrograms.length; i++) {
+              loadSpectrogramData(spectrograms[i]);
+            }
           }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
       });
