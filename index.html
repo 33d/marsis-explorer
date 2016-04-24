@@ -7,45 +7,77 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
-  <title>Hello World!</title>
-  <script src="https://cesiumjs.org/releases/1.20/Build/Cesium/Cesium.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
-  <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <title>Marsis Explorer</title>
+  <script src="cesium/Cesium.js"></script>
+  <script src="jquery/2.2.2/jquery.min.js"></script>
+  <script src="spectrogram/spectrogram.js"></script>
   <style>
-      @import url(../Build/Cesium/Widgets/widgets.css);
+      @import url(cesium/Widgets/widgets.css);
       html, body, {
         width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
       }
       #cesiumContainer {
-        height: 500px;
+        /*height: 500px;*/
         margin-bottom: 0.75em;
       }
       #radarContainer, #simulationContainer, #differenceContainer {
         width: 100%;
-        height: 20px;
+        height: 33%;
         margin-bottom: 0.75em;
         background-color: rgba(0,0,0,0.1);
+      }
+      #radarContainer canvas, #simulationContainer canvas, #differenceContainer canvas {
+        width:100%;
+        max-height: 100%;
+      }
+      /* Hide Cesium toolbar */
+      .cesium-viewer-bottom, .cesium-viewer-animationContainer {
+        display: none;
       }
   </style>
 </head>
 <body>
-  <h1>Marsis explorer</h1>
+
+  <div id="infoContainer">
+    <h1>Marsis explorer</h1>
+  </div>
   <div id="cesiumContainer"></div>
-
-  <div id="radarContainer">
-    
-  </div>
-
-  <div id="simulationContainer">
-    
-  </div>
-
-  <div id="differenceContainer">
-    
+  <div id="spectrogramContainers">
+    <div id="radarContainer"></div>
+    <div id="simulationContainer"></div>
+    <div id="differenceContainer"></div>
   </div>
 
   <script>
-    // var viewer = new Cesium.Viewer('cesiumContainer');
+    // Resize the elements to fit the screen
+    var resizeContainers = function() {
+      var globeScale = 2/5;
+      var slop = 120;
+      $('#cesiumContainer').height( ($(window).height() - slop) * globeScale );
+      $('#spectrogramContainers').height( ($(window).height() - slop) * (1-globeScale) );
+    }
+
+    // If the window is resized by the user, reset the size
+    $(function() {
+      $(window).resize(function() {
+          if ($('#cesiumContainer').length > 0) {
+            resizeContainers();
+          }
+      });
+      $(window).resize();
+    });
+
+    // Once the page is loaded, resize to fit
+    $( document ).ready(function() { 
+      $(window).resize();
+    });
+
+    // Setup the spectrogram
+    var radarSpectrogram = new Spectrogram('#radarContainer', 'iono');
+    var simulationSpectrogram = new Spectrogram('#simulationContainer', 'sim');
+    var differenceSpectrogram = new Spectrogram('#differenceContainer', 'iono');
+
+    // Setup the globe
     var viewer = new Cesium.Viewer('cesiumContainer', {
       imageryProvider : new Cesium.MapboxImageryProvider({
         url: 'https://api.mapbox.com/v4/',
@@ -59,13 +91,16 @@
     });
     // Load the geojson datasource
     var promise;
-    var jsonResult;
+    var globeJson;
+    var radarSpectrogramJson;
+    var simulationSpectrogramJson;
+    var differenceSpectrogramJson;
     $.ajax({
       url: "all.geojson",
       dataType: "text",
       success: function( result ) {
-        jsonResult = JSON.parse(result);
-        var promise = Cesium.GeoJsonDataSource.load(jsonResult, {
+        globeJson = JSON.parse(result);
+        var promise = Cesium.GeoJsonDataSource.load(globeJson, {
           stroke: Cesium.Color.HOTPINK,
           fill: Cesium.Color.PINK,
           strokeWidth: 3,
@@ -74,6 +109,7 @@
         });
         promise.then(function(dataSource) {
         viewer.dataSources.add(dataSource);
+        // Set a click handler to load the spectrogram from the point selected
         var scene = viewer.scene;
         var handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
         handler.setInputAction(function(click) {
@@ -84,13 +120,41 @@
           var pickedObject = scene.pick(click.position);
           var dataPoint;
           if (pickedObject) {
-            // Ugly hack...
+            // Ugly hack to get the pickedObject.id
             dataPoint = dataSource.entities.getById(pickedObject.id.valueOf()._id);
           }
           if (dataPoint) {
-            addToMessage('orbit', dataPoint.properties.orbit);
-            addToMessage('line', dataPoint.properties.line);
-            alert(alertText);
+            // Load the spectrogram from the point
+            var loadSpectrogramData = function(container, json, spectrogram) {
+              $.ajax({
+                url: "spectrogram/data.json",
+                dataType: "text",
+                success: function(result) {
+                  json = JSON.parse(result);
+                  spectrogram.load(json);
+                  // Set click handlers for the spectrograms
+                  var spectrogramContainer = document.getElementById(container);
+                  spectrogramContainer.addEventListener('click', function(event) {
+                    var x = event.offsetX,
+                        y = event.offsetY;
+
+                    // Convert point to scale of the json data
+                    x = Math.floor((x / spectrogramContainer.offsetWidth) * json.frames.length);
+                    y = Math.floor((y / spectrogramContainer.offsetHeight) * 512);
+
+                    // TODO: show that point back on the globe
+                    // TODO: save point to a list to show what's been clicked
+                    alert('Clicked point in '+spectrogramContainer.id+': ' + x + ', ' + y);
+
+                  }, false);
+                }
+              });
+            };
+
+            // TODO: select the correct data.json to load from the point.
+            loadSpectrogramData('radarContainer', radarSpectrogramJson, radarSpectrogram);
+            loadSpectrogramData('simulationContainer', simulationSpectrogramJson, simulationSpectrogram);
+            loadSpectrogramData('differenceContainer', differenceSpectrogramJson, differenceSpectrogram);
           }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
       });
