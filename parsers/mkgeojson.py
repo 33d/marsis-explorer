@@ -12,7 +12,8 @@ for f in sys.argv[1:]:
   j = json.load(open(f, "r"))
   key = (j["orbit"], j["line"])
   c = coords.get(key, [])
-  c.append((j["longitude"], j["latitude"]))
+  for f in j["frames"]:
+    c.append((f["lon"], f["lat"], f["alt"], f["frame"]))
   coords[key] = c
 
 for k, v in coords.items():
