@@ -12,6 +12,13 @@ See progress at:
 
 ![Our test app](marsis-screenshot.jpg)
 
+## To run it yourself
+
+* Clone this project.
+* Start up a python simpleserver by typing this command into your Terminal:
+* ```$ python -m SimpleHTTPServer 8000```
+* Visit ```http://localhost:8000``` in your favourite browser.
+
 ## Matlab data
 
 * Damien did lots of work to massage the Matlab data into GeoJSON for mapping.
