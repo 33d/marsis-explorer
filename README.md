@@ -8,7 +8,7 @@ This entry looks at the subsurface data provided by the [Mars Express Orbiter](h
 The main objective of the app is to display each radar echo data on a map of Mars, which can then be clicked to display both that and the simulation data to try and filter out false positives.
 
 See progress at:
-[marsis-explorer.herokuapp.com](http://marsis-explorer.herokuapp.com)
+[marsis-explorer.herokuapp.com](https://marsis-explorer.herokuapp.com)
 
 ![Our test app](marsis-screenshot.jpg)
 
