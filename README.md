@@ -12,6 +12,12 @@ See progress at:
 
 ![Our test app](marsis-screenshot.jpg)
 
+## Matlab data
+
+* Damien did lots of work to massage the Matlab data into GeoJSON for mapping.
+* See the '[Parsers](https://github.com/33d/marsis-explorer/tree/master/parsers)' directory for the [Octave](https://www.gnu.org/software/octave/) exporters Damien wrote.
+* Here is the original [Matlab data](https://github.com/SpaceAppsAdl/SouthAustraliaChallenge2016/tree/master/MatlabCode)
+
 ## To run it yourself
 
 * Clone this project.
@@ -19,11 +25,12 @@ See progress at:
 * ```$ python -m SimpleHTTPServer 8000```
 * Visit ```http://localhost:8000``` in your favourite browser.
 
-## Matlab data
+## To use Heroku
 
-* Damien did lots of work to massage the Matlab data into GeoJSON for mapping.
-* See the '[Parsers](https://github.com/33d/marsis-explorer/tree/master/parsers)' directory for the [Octave](https://www.gnu.org/software/octave/) exporters Damien wrote.
-* Here is the original [Matlab data](https://github.com/SpaceAppsAdl/SouthAustraliaChallenge2016/tree/master/MatlabCode)
+* Use this static build-pack: [github.com/FriendCode/heroku-buildpack-static](https://github.com/FriendCode/heroku-buildpack-static)
+* Once you've created your Heroku app using the command line toolkit, type:
+* ```$ heroku buildpacks:set https://github.com/FriendCode/heroku-buildpack-static```
+* And then ```$ git push heroku master``` to push your code to the app.
 
 ## Features to add
 
